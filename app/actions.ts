@@ -3,31 +3,8 @@
 import { promises as fs } from "fs";
 import path from "path";
 import { revalidatePath } from "next/cache";
+import { IMAGES_DIR, enqueue, readBins, writeBins } from "@/lib/inventory-db";
 import type { Bin, Item } from "@/types";
-
-const DATA_PATH = path.join(process.cwd(), "data", "inventory.json");
-const IMAGES_DIR = path.join(process.cwd(), "public", "images");
-
-let writeQueue: Promise<unknown> = Promise.resolve();
-
-function enqueue<T>(task: () => Promise<T>): Promise<T> {
-  const run = writeQueue.then(task, task);
-  writeQueue = run.then(
-    () => undefined,
-    () => undefined,
-  );
-  return run;
-}
-
-async function readBins(): Promise<Bin[]> {
-  const raw = await fs.readFile(DATA_PATH, "utf8");
-  return JSON.parse(raw) as Bin[];
-}
-
-async function writeBins(data: Bin[]): Promise<void> {
-  await fs.mkdir(path.dirname(DATA_PATH), { recursive: true });
-  await fs.writeFile(DATA_PATH, JSON.stringify(data, null, 2), "utf8");
-}
 
 function touch(bin: Bin): void {
   bin.updatedAt = new Date().toISOString();
