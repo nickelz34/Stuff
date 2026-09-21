@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Stuff",
-  description: "A simple inventory application for your Stuff",
+  description: "Bins, notes, and items in one place.",
   applicationName: "Stuff",
   appleWebApp: {
     capable: true,

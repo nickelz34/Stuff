@@ -1,2 +1,2 @@
 # Stuff
-A simple inventory application for your “Stuff”
+Bins, notes, and items in one place.
