@@ -33,8 +33,58 @@ function touch(bin: Bin): void {
   bin.updatedAt = new Date().toISOString();
 }
 
+function canonicalBinNumber(binNumber: string): number | null {
+  const trimmed = binNumber.trim();
+  if (!/^\d+$/.test(trimmed)) return null;
+  const value = Number(trimmed);
+  if (!Number.isSafeInteger(value) || value <= 0) return null;
+  return value;
+}
+
+function formatBinNumber(value: number): string {
+  return String(value).padStart(2, "0");
+}
+
+export type BinNumberResult =
+  | { ok: true; binNumber: string }
+  | { ok: false; error: string };
+
+function normalizeBinNumber(input: string): BinNumberResult {
+  const value = canonicalBinNumber(input);
+  if (value === null) {
+    return { ok: false, error: "Use a whole number, like 2 or 02." };
+  }
+  return { ok: true, binNumber: formatBinNumber(value) };
+}
+
+function compareBins(a: Bin, b: Bin): number {
+  const aValue = canonicalBinNumber(a.bin_number);
+  const bValue = canonicalBinNumber(b.bin_number);
+  if (aValue !== null && bValue !== null && aValue !== bValue) return aValue - bValue;
+  return a.bin_number.localeCompare(b.bin_number);
+}
+
+async function renameBinPhoto(bin: Bin, nextNumber: string): Promise<void> {
+  if (!bin.photo || bin.bin_number === nextNumber) return;
+  const nextFilename = `bin_${nextNumber}.jpg`;
+  const oldPath = path.join(IMAGES_DIR, `bin_${bin.bin_number}.jpg`);
+  const nextPath = path.join(IMAGES_DIR, nextFilename);
+  try {
+    await fs.access(oldPath);
+  } catch {
+    return;
+  }
+  await fs.mkdir(IMAGES_DIR, { recursive: true });
+  await fs.rm(nextPath, { force: true });
+  await fs.rename(oldPath, nextPath);
+  bin.photo = `/images/${nextFilename}?t=${Date.now()}`;
+}
+
 export async function getBins(): Promise<Bin[]> {
-  return enqueue(() => readBins());
+  return enqueue(async () => {
+    const bins = await readBins();
+    return bins.sort(compareBins);
+  });
 }
 
 export async function addBin(): Promise<Bin> {
@@ -64,6 +114,32 @@ export async function deleteBin(id: string): Promise<void> {
     const bins = await readBins();
     await writeBins(bins.filter((bin) => bin.id !== id));
     revalidatePath("/");
+  });
+}
+
+export async function updateBinNumber(id: string, binNumber: string): Promise<BinNumberResult> {
+  const normalized = normalizeBinNumber(binNumber);
+  if (!normalized.ok) return normalized;
+
+  return enqueue(async () => {
+    const bins = await readBins();
+    const bin = bins.find((entry) => entry.id === id);
+    if (!bin) return { ok: false, error: "That bin is gone." };
+
+    const nextNumber = normalized.binNumber;
+    if (bin.bin_number === nextNumber) return { ok: true, binNumber: nextNumber };
+
+    const taken = bins.some(
+      (entry) => entry.id !== id && canonicalBinNumber(entry.bin_number) === canonicalBinNumber(nextNumber),
+    );
+    if (taken) return { ok: false, error: `Bin ${nextNumber} already exists.` };
+
+    await renameBinPhoto(bin, nextNumber);
+    bin.bin_number = nextNumber;
+    touch(bin);
+    await writeBins(bins);
+    revalidatePath("/");
+    return { ok: true, binNumber: nextNumber };
   });
 }
 

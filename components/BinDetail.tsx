@@ -5,6 +5,7 @@ import {
   addItem,
   deleteBin,
   deleteItem,
+  updateBinNumber,
   updateNotes,
   updateQty,
   uploadBinPhoto,
@@ -19,21 +20,36 @@ type BinDetailProps = {
 
 export default function BinDetail({ bin, onClose, onChanged }: BinDetailProps) {
   const [notes, setNotes] = useState(bin.notes);
+  const [binNumber, setBinNumber] = useState(bin.bin_number);
   const [itemName, setItemName] = useState("");
   const [busy, setBusy] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const notesRef = useRef(notes);
   const savedNotes = useRef(bin.notes);
+  const binNumberRef = useRef(bin.bin_number);
+  const savedNumber = useRef(bin.bin_number);
+  const numberSave = useRef<Promise<boolean> | null>(null);
   notesRef.current = notes;
+  binNumberRef.current = binNumber;
 
   useEffect(() => {
     setNotes(bin.notes);
     savedNotes.current = bin.notes;
+    setBinNumber(bin.bin_number);
+    binNumberRef.current = bin.bin_number;
+    savedNumber.current = bin.bin_number;
     setItemName("");
     setConfirmDelete(false);
     setError(null);
   }, [bin.id]);
+
+  useEffect(() => {
+    if (binNumberRef.current !== savedNumber.current) return;
+    setBinNumber(bin.bin_number);
+    binNumberRef.current = bin.bin_number;
+    savedNumber.current = bin.bin_number;
+  }, [bin.bin_number]);
 
   useEffect(() => {
     function onKey(event: KeyboardEvent) {
@@ -47,6 +63,45 @@ export default function BinDetail({ bin, onClose, onChanged }: BinDetailProps) {
     if (notesRef.current === savedNotes.current) return;
     await updateNotes(bin.id, notesRef.current);
     savedNotes.current = notesRef.current;
+  }
+
+  function saveBinNumber(): Promise<boolean> {
+    if (numberSave.current) return numberSave.current;
+    const typed = binNumberRef.current;
+    if (typed.trim() === savedNumber.current) {
+      if (typed !== savedNumber.current) {
+        setBinNumber(savedNumber.current);
+        binNumberRef.current = savedNumber.current;
+      }
+      return Promise.resolve(true);
+    }
+
+    const pending = (async () => {
+      setBusy(true);
+      setError(null);
+      try {
+        await flushNotes();
+        const result = await updateBinNumber(bin.id, typed);
+        if (!result.ok) {
+          setError(result.error);
+          return false;
+        }
+        setBinNumber(result.binNumber);
+        binNumberRef.current = result.binNumber;
+        savedNumber.current = result.binNumber;
+        await onChanged();
+        return true;
+      } catch {
+        setError("Could not save that change.");
+        return false;
+      } finally {
+        setBusy(false);
+        numberSave.current = null;
+      }
+    })();
+
+    numberSave.current = pending;
+    return pending;
   }
 
   async function run(task: () => Promise<void>) {
@@ -64,6 +119,8 @@ export default function BinDetail({ bin, onClose, onChanged }: BinDetailProps) {
   }
 
   async function handleClose() {
+    const saved = await saveBinNumber();
+    if (!saved) return;
     setBusy(true);
     try {
       await flushNotes();
@@ -84,17 +141,36 @@ export default function BinDetail({ bin, onClose, onChanged }: BinDetailProps) {
         aria-labelledby="bin-detail-title"
         className="flex max-h-[100dvh] w-full flex-col overflow-hidden border border-taxi/40 bg-ink sm:max-h-[90dvh] sm:max-w-lg"
       >
-        <header className="flex items-center justify-between gap-3 border-b border-white/10 px-4 py-3 pt-[max(0.75rem,env(safe-area-inset-top))]">
-          <h2 id="bin-detail-title" className="text-3xl font-black tracking-tight text-taxi">
-            Bin {bin.bin_number}
-          </h2>
-          <button
-            type="button"
-            onClick={handleClose}
-            className="border border-white/20 px-3 py-2 text-sm font-bold uppercase tracking-wider"
-          >
-            Close
-          </button>
+        <header className="border-b border-white/10 px-4 py-3 pt-[max(0.75rem,env(safe-area-inset-top))]">
+          <div className="flex items-center justify-between gap-3">
+            <h2 id="bin-detail-title" className="flex min-w-0 items-center gap-2 text-3xl font-black tracking-tight text-taxi">
+              <span>Bin</span>
+              <input
+                value={binNumber}
+                inputMode="numeric"
+                aria-label="Bin number"
+                disabled={busy}
+                onChange={(event) => setBinNumber(event.target.value)}
+                onBlur={() => {
+                  void saveBinNumber();
+                }}
+                onKeyDown={(event) => {
+                  if (event.key !== "Enter") return;
+                  event.preventDefault();
+                  event.currentTarget.blur();
+                }}
+                className="w-24 border border-white/15 bg-black px-2 py-1 text-3xl font-black tracking-tight text-taxi outline-none focus:border-taxi focus:ring-2 focus:ring-taxi disabled:opacity-50"
+              />
+            </h2>
+            <button
+              type="button"
+              onClick={handleClose}
+              className="border border-white/20 px-3 py-2 text-sm font-bold uppercase tracking-wider"
+            >
+              Close
+            </button>
+          </div>
+          {error ? <p className="pt-2 text-sm text-taxi">{error}</p> : null}
         </header>
 
         <div className="flex-1 space-y-5 overflow-y-auto px-4 py-4">
@@ -225,7 +301,6 @@ export default function BinDetail({ bin, onClose, onChanged }: BinDetailProps) {
             </form>
           </section>
 
-          {error ? <p className="text-sm text-taxi">{error}</p> : null}
         </div>
 
         <footer className="border-t border-white/10 px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
