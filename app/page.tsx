@@ -70,10 +70,10 @@ export default function HomePage() {
       <header className="flex items-center justify-between gap-4 pb-2 pt-5">
         <h1 className="min-w-0">
           <img
-            src="/stuff-logo.png"
+            src="/stuff-logo.png?v=2"
             alt="Stuff"
             width={720}
-            height={436}
+            height={400}
             className="h-[4.75rem] w-auto max-w-[min(20rem,calc(100vw-9rem))] sm:h-28"
           />
         </h1>
