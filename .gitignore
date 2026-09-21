@@ -4,6 +4,7 @@ node_modules/
 out/
 build/
 .env*.local
+*.tsbuildinfo
 
 # stuff local app storage (Keeps your data & photos private)
 data/inventory.json
