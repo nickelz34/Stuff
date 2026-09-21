@@ -1,0 +1,141 @@
+[
+  {
+    "id": "bin-01",
+    "bin_number": "01",
+    "notes": "Hand tools for around the house",
+    "items": [
+      {
+        "id": "item-01-hammer",
+        "name": "Hammer",
+        "qty": 1
+      },
+      {
+        "id": "item-01-tape",
+        "name": "Tape measure",
+        "qty": 2
+      },
+      {
+        "id": "item-01-screwdriver",
+        "name": "Screwdriver set",
+        "qty": 1
+      }
+    ],
+    "photo": null,
+    "updatedAt": "2026-09-21T00:00:00.000Z"
+  },
+  {
+    "id": "bin-02",
+    "bin_number": "02",
+    "notes": "Cables and chargers",
+    "items": [
+      {
+        "id": "item-02-usb",
+        "name": "USB-C cable",
+        "qty": 4
+      },
+      {
+        "id": "item-02-hdmi",
+        "name": "HDMI cable",
+        "qty": 2
+      },
+      {
+        "id": "item-02-charger",
+        "name": "Phone charger",
+        "qty": 1
+      }
+    ],
+    "photo": null,
+    "updatedAt": "2026-09-21T00:00:00.000Z"
+  },
+  {
+    "id": "bin-03",
+    "bin_number": "03",
+    "notes": "Hardware: screws, anchors, and bits",
+    "items": [
+      {
+        "id": "item-03-screws",
+        "name": "Wood screws",
+        "qty": 40
+      },
+      {
+        "id": "item-03-anchors",
+        "name": "Wall anchors",
+        "qty": 12
+      },
+      {
+        "id": "item-03-bits",
+        "name": "Drill bits",
+        "qty": 8
+      }
+    ],
+    "photo": null,
+    "updatedAt": "2026-09-21T00:00:00.000Z"
+  },
+  {
+    "id": "bin-04",
+    "bin_number": "04",
+    "notes": "Kitchen extras that do not fit in drawers",
+    "items": [
+      {
+        "id": "item-04-spatula",
+        "name": "Spatula",
+        "qty": 2
+      },
+      {
+        "id": "item-04-jars",
+        "name": "Mason jars",
+        "qty": 6
+      }
+    ],
+    "photo": null,
+    "updatedAt": "2026-09-21T00:00:00.000Z"
+  },
+  {
+    "id": "bin-05",
+    "bin_number": "05",
+    "notes": "Outdoor and garden",
+    "items": [
+      {
+        "id": "item-05-gloves",
+        "name": "Work gloves",
+        "qty": 2
+      },
+      {
+        "id": "item-05-twine",
+        "name": "Garden twine",
+        "qty": 1
+      },
+      {
+        "id": "item-05-stakes",
+        "name": "Plant stakes",
+        "qty": 10
+      }
+    ],
+    "photo": null,
+    "updatedAt": "2026-09-21T00:00:00.000Z"
+  },
+  {
+    "id": "bin-06",
+    "bin_number": "06",
+    "notes": "Misc. odds and ends",
+    "items": [
+      {
+        "id": "item-06-batteries",
+        "name": "AA batteries",
+        "qty": 8
+      },
+      {
+        "id": "item-06-tape",
+        "name": "Duct tape",
+        "qty": 1
+      },
+      {
+        "id": "item-06-flashlight",
+        "name": "Flashlight",
+        "qty": 1
+      }
+    ],
+    "photo": null,
+    "updatedAt": "2026-09-21T00:00:00.000Z"
+  }
+]
