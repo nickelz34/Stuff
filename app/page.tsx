@@ -68,16 +68,15 @@ export default function HomePage() {
   return (
     <main className="mx-auto min-h-dvh max-w-5xl px-4 pb-16">
       <header className="flex items-center justify-between gap-4 pb-2 pt-5">
-        <div className="flex items-center gap-3">
+        <h1 className="min-w-0">
           <img
-            src="/logo.png"
-            alt=""
-            width={480}
-            height={377}
-            className="h-16 w-auto shrink-0"
+            src="/stuff-logo.png"
+            alt="Stuff"
+            width={720}
+            height={436}
+            className="h-[4.75rem] w-auto max-w-[min(20rem,calc(100vw-9rem))] sm:h-28"
           />
-          <h1 className="text-5xl font-black leading-none tracking-tight">Stuff</h1>
-        </div>
+        </h1>
         <button
           type="button"
           onClick={() => void handleAdd()}
