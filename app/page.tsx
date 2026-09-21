@@ -76,10 +76,7 @@ export default function HomePage() {
             height={377}
             className="h-16 w-auto shrink-0"
           />
-          <div>
-            <p className="text-[11px] font-bold uppercase tracking-[0.35em] text-taxi">Inventory</p>
-            <h1 className="text-5xl font-black leading-none tracking-tight">Stuff</h1>
-          </div>
+          <h1 className="text-5xl font-black leading-none tracking-tight">Stuff</h1>
         </div>
         <button
           type="button"
