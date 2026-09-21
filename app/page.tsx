@@ -67,11 +67,16 @@ export default function HomePage() {
 
   return (
     <main className="mx-auto min-h-dvh max-w-5xl px-4 pb-16">
-      <header className="flex items-end justify-between gap-4 pb-2 pt-5">
-        <div>
-          <p className="text-[11px] font-bold uppercase tracking-[0.35em] text-taxi">Inventory</p>
-          <h1 className="text-5xl font-black leading-none tracking-tight">Stuff</h1>
-        </div>
+      <header className="flex items-center justify-between gap-4 pb-2 pt-5">
+        <h1 className="min-w-0">
+          <img
+            src="/stuff-mark.png"
+            alt="Stuff"
+            width={720}
+            height={400}
+            className="h-[4.75rem] w-auto max-w-[min(20rem,calc(100vw-9rem))] sm:h-28"
+          />
+        </h1>
         <button
           type="button"
           onClick={() => void handleAdd()}
