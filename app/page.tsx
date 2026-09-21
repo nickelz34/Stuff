@@ -30,12 +30,9 @@ export default function HomePage() {
     if (stored === "0") setShowPhotos(false);
   }, []);
 
-  function togglePhotos() {
-    setShowPhotos((current) => {
-      const next = !current;
-      window.localStorage.setItem(PHOTO_VIEW_KEY, next ? "1" : "0");
-      return next;
-    });
+  function setPhotoView(next: boolean) {
+    setShowPhotos(next);
+    window.localStorage.setItem(PHOTO_VIEW_KEY, next ? "1" : "0");
   }
 
   useEffect(() => {
@@ -99,16 +96,17 @@ export default function HomePage() {
         </button>
       </header>
 
-      <InventoryTools
-        showPhotos={showPhotos}
-        onTogglePhotos={togglePhotos}
-        onRestored={async () => {
-          setSelectedId(null);
-          await refresh();
-        }}
-      />
-
-      <SearchBar value={query} onChange={setQuery} />
+      <div className="sticky top-0 z-20 -mx-4 border-b border-white/10 bg-ink/95 px-4 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))] backdrop-blur">
+        <InventoryTools
+          showPhotos={showPhotos}
+          onShowPhotos={setPhotoView}
+          onRestored={async () => {
+            setSelectedId(null);
+            await refresh();
+          }}
+        />
+        <SearchBar value={query} onChange={setQuery} />
+      </div>
 
       {error ? <p className="mt-4 text-sm text-taxi">{error}</p> : null}
 

@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from "react";
 import type { Bin } from "@/types";
 
 type BinCardProps = {
@@ -11,7 +12,26 @@ const STRIPES =
 
 export default function BinCard({ bin, showPhotos, onOpen }: BinCardProps) {
   const itemCount = bin.items.reduce((total, item) => total + item.qty, 0);
-  const flipped = showPhotos && Boolean(bin.photo);
+  const showPhoto = showPhotos && Boolean(bin.photo);
+  const [facePhoto, setFacePhoto] = useState(showPhoto);
+  const [flipping, setFlipping] = useState(false);
+  const facePhotoRef = useRef(facePhoto);
+  facePhotoRef.current = facePhoto;
+
+  useEffect(() => {
+    if (facePhotoRef.current === showPhoto) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setFacePhoto(showPhoto);
+      return;
+    }
+    setFlipping(true);
+    const swap = window.setTimeout(() => setFacePhoto(showPhoto), 180);
+    const done = window.setTimeout(() => setFlipping(false), 380);
+    return () => {
+      window.clearTimeout(swap);
+      window.clearTimeout(done);
+    };
+  }, [showPhoto]);
 
   return (
     <button
@@ -21,28 +41,24 @@ export default function BinCard({ bin, showPhotos, onOpen }: BinCardProps) {
     >
       <div className="relative aspect-[4/3] [perspective:900px]">
         <div
-          data-bin-face={flipped ? "photo" : "stripes"}
-          className={`relative h-full w-full transition-transform duration-500 motion-reduce:transition-none [transform-style:preserve-3d] ${
-            flipped ? "[transform:rotateY(180deg)]" : ""
-          }`}
+          data-bin-face={facePhoto ? "photo" : "stripes"}
+          className={`relative h-full w-full ${flipping ? "bin-flip" : ""}`}
         >
-          <div className="absolute inset-0 overflow-hidden [backface-visibility:hidden] [transform:rotateY(0deg)]">
-            <div className="h-full w-full" style={{ backgroundImage: STRIPES }} />
-            {bin.photo ? (
-              <span className="absolute bottom-2 right-2 bg-ink/90 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-taxi">
-                Photo
-              </span>
-            ) : null}
-          </div>
-          {bin.photo ? (
-            <div className="absolute inset-0 overflow-hidden bg-black [backface-visibility:hidden] [transform:rotateY(180deg)]">
-              <img
-                src={bin.photo}
-                alt={`Photo of bin ${bin.bin_number}`}
-                className="h-full w-full object-cover"
-              />
+          {facePhoto && bin.photo ? (
+            <img
+              src={bin.photo}
+              alt={`Photo of bin ${bin.bin_number}`}
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            <div className="relative h-full w-full" style={{ backgroundImage: STRIPES }}>
+              {bin.photo ? (
+                <span className="absolute bottom-2 right-2 bg-ink/90 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-taxi">
+                  Photo
+                </span>
+              ) : null}
             </div>
-          ) : null}
+          )}
         </div>
         <span className="absolute left-2 top-2 z-10 bg-ink px-2 py-1 text-2xl font-black leading-none tracking-tight text-taxi">
           {bin.bin_number}

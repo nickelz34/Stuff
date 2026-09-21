@@ -4,13 +4,13 @@ import { useState } from "react";
 
 type InventoryToolsProps = {
   showPhotos: boolean;
-  onTogglePhotos: () => void;
+  onShowPhotos: (showPhotos: boolean) => void;
   onRestored: () => Promise<void>;
 };
 
 export default function InventoryTools({
   showPhotos,
-  onTogglePhotos,
+  onShowPhotos,
   onRestored,
 }: InventoryToolsProps) {
   const [busy, setBusy] = useState<"restore" | null>(null);
@@ -48,16 +48,30 @@ export default function InventoryTools({
   }
 
   return (
-    <div className="mt-3 space-y-2">
+    <div className="space-y-2">
       <div className="flex flex-wrap gap-2">
-        <button
-          type="button"
-          aria-pressed={showPhotos}
-          onClick={onTogglePhotos}
-          className="border border-taxi px-3 py-2 text-xs font-black uppercase tracking-wider text-taxi focus:outline-none focus-visible:ring-2 focus-visible:ring-taxi"
-        >
-          {showPhotos ? "Flip to bins" : "Flip to photos"}
-        </button>
+        <div className="inline-flex border border-taxi" role="group" aria-label="Bin picture">
+          <button
+            type="button"
+            aria-pressed={!showPhotos}
+            onClick={() => onShowPhotos(false)}
+            className={`px-3 py-2 text-xs font-black uppercase tracking-wider focus:outline-none focus-visible:ring-2 focus-visible:ring-taxi ${
+              showPhotos ? "text-taxi" : "bg-taxi text-ink"
+            }`}
+          >
+            Bins
+          </button>
+          <button
+            type="button"
+            aria-pressed={showPhotos}
+            onClick={() => onShowPhotos(true)}
+            className={`border-l border-taxi px-3 py-2 text-xs font-black uppercase tracking-wider focus:outline-none focus-visible:ring-2 focus-visible:ring-taxi ${
+              showPhotos ? "bg-taxi text-ink" : "text-taxi"
+            }`}
+          >
+            Photos
+          </button>
+        </div>
         <a
           href="/api/backup"
           download={`stuff-backup-${new Date().toISOString().slice(0, 10)}.zip`}
