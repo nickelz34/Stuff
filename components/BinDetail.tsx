@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type RefObject } from "react";
 import {
   addItem,
   deleteBin,
@@ -18,6 +18,82 @@ type BinDetailProps = {
   onChanged: () => Promise<void>;
 };
 
+const PHONE_QUERY = "(max-width: 639px)";
+// Taller than the Safari toolbar, shorter than the software keyboard.
+const KEYBOARD_INSET_THRESHOLD = 120;
+
+function usePhoneKeyboardLock(sheetRef: RefObject<HTMLDivElement | null>) {
+  const [keyboardOpen, setKeyboardOpen] = useState(false);
+
+  useEffect(() => {
+    const sheet = sheetRef.current;
+    if (!sheet) return;
+
+    const phoneQuery = window.matchMedia(PHONE_QUERY);
+    let followUps: number[] = [];
+
+    const resetSheet = () => {
+      sheet.style.position = "";
+      sheet.style.left = "";
+      sheet.style.right = "";
+      sheet.style.top = "";
+      sheet.style.bottom = "";
+      sheet.style.height = "";
+      sheet.style.maxHeight = "";
+    };
+
+    const sync = () => {
+      const viewport = window.visualViewport;
+      if (!viewport || !phoneQuery.matches) {
+        resetSheet();
+        setKeyboardOpen((open) => (open ? false : open));
+        return;
+      }
+
+      const inset = Math.max(0, window.innerHeight - viewport.offsetTop - viewport.height);
+      if (inset < KEYBOARD_INSET_THRESHOLD) {
+        resetSheet();
+        setKeyboardOpen((open) => (open ? false : open));
+        return;
+      }
+
+      // Keep the sheet inside the visible area above the keyboard. iOS pans the
+      // visual viewport on the first focus, which otherwise scrolls this field away.
+      sheet.style.position = "fixed";
+      sheet.style.left = "0";
+      sheet.style.right = "0";
+      sheet.style.top = `${viewport.offsetTop}px`;
+      sheet.style.bottom = "auto";
+      sheet.style.height = `${viewport.height}px`;
+      sheet.style.maxHeight = `${viewport.height}px`;
+      setKeyboardOpen((open) => (open ? open : true));
+    };
+
+    const syncAfterKeyboardAnimates = () => {
+      sync();
+      for (const id of followUps) window.clearTimeout(id);
+      followUps = [50, 250, 500].map((delay) => window.setTimeout(sync, delay));
+    };
+
+    sync();
+    phoneQuery.addEventListener("change", sync);
+    window.visualViewport?.addEventListener("resize", sync);
+    window.visualViewport?.addEventListener("scroll", sync);
+    sheet.addEventListener("focusin", syncAfterKeyboardAnimates);
+
+    return () => {
+      phoneQuery.removeEventListener("change", sync);
+      window.visualViewport?.removeEventListener("resize", sync);
+      window.visualViewport?.removeEventListener("scroll", sync);
+      sheet.removeEventListener("focusin", syncAfterKeyboardAnimates);
+      for (const id of followUps) window.clearTimeout(id);
+      resetSheet();
+    };
+  }, [sheetRef]);
+
+  return keyboardOpen;
+}
+
 export default function BinDetail({ bin, onClose, onChanged }: BinDetailProps) {
   const [notes, setNotes] = useState(bin.notes);
   const [binNumber, setBinNumber] = useState(bin.bin_number);
@@ -30,8 +106,38 @@ export default function BinDetail({ bin, onClose, onChanged }: BinDetailProps) {
   const binNumberRef = useRef(bin.bin_number);
   const savedNumber = useRef(bin.bin_number);
   const numberSave = useRef<Promise<boolean> | null>(null);
+  const sheetRef = useRef<HTMLDivElement>(null);
+  const keyboardOpen = usePhoneKeyboardLock(sheetRef);
   notesRef.current = notes;
   binNumberRef.current = binNumber;
+
+  useEffect(() => {
+    const scrollY = window.scrollY;
+    const { body } = document;
+    const previous = {
+      position: body.style.position,
+      top: body.style.top,
+      left: body.style.left,
+      right: body.style.right,
+      width: body.style.width,
+      overflow: body.style.overflow,
+    };
+    body.style.position = "fixed";
+    body.style.top = `-${scrollY}px`;
+    body.style.left = "0";
+    body.style.right = "0";
+    body.style.width = "100%";
+    body.style.overflow = "hidden";
+    return () => {
+      body.style.position = previous.position;
+      body.style.top = previous.top;
+      body.style.left = previous.left;
+      body.style.right = previous.right;
+      body.style.width = previous.width;
+      body.style.overflow = previous.overflow;
+      window.scrollTo(0, scrollY);
+    };
+  }, []);
 
   useEffect(() => {
     setNotes(bin.notes);
@@ -136,12 +242,13 @@ export default function BinDetail({ bin, onClose, onChanged }: BinDetailProps) {
   return (
     <div className="fixed inset-0 z-40 flex items-end justify-center bg-black/80 sm:items-center sm:p-6">
       <div
+        ref={sheetRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby="bin-detail-title"
-        className="flex max-h-[100dvh] w-full flex-col overflow-hidden border border-taxi/40 bg-ink sm:max-h-[90dvh] sm:max-w-lg"
+        className="flex h-dvh max-h-dvh w-full flex-col overflow-hidden border border-taxi/40 bg-ink sm:h-auto sm:max-h-[90dvh] sm:max-w-lg"
       >
-        <header className="border-b border-white/10 px-4 py-3 pt-[max(0.75rem,env(safe-area-inset-top))]">
+        <header className="shrink-0 border-b border-white/10 px-4 py-3 pt-[max(0.75rem,env(safe-area-inset-top))]">
           <div className="flex items-center justify-between gap-3">
             <h2 id="bin-detail-title" className="flex min-w-0 items-center gap-2 text-3xl font-black tracking-tight text-taxi">
               <span>Bin</span>
@@ -173,7 +280,7 @@ export default function BinDetail({ bin, onClose, onChanged }: BinDetailProps) {
           {error ? <p className="pt-2 text-sm text-taxi">{error}</p> : null}
         </header>
 
-        <div className="flex-1 space-y-5 overflow-y-auto px-4 py-4">
+        <div className="min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-y-contain px-4 py-4">
           <div className="space-y-3">
             <div className="aspect-[4/3] overflow-hidden border border-white/10 bg-black">
               {bin.photo ? (
@@ -273,37 +380,43 @@ export default function BinDetail({ bin, onClose, onChanged }: BinDetailProps) {
               </ul>
             )}
 
-            <form
-              className="flex gap-2 pt-1"
-              onSubmit={(event) => {
-                event.preventDefault();
-                const name = itemName.trim();
-                if (!name) return;
-                void run(async () => {
-                  await addItem(bin.id, name);
-                  setItemName("");
-                });
-              }}
-            >
-              <input
-                value={itemName}
-                onChange={(event) => setItemName(event.target.value)}
-                placeholder="Add an item"
-                className="min-w-0 flex-1 border border-white/15 bg-black px-3 py-2 text-base outline-none focus:border-taxi focus:ring-2 focus:ring-taxi"
-              />
-              <button
-                type="submit"
-                disabled={busy || !itemName.trim()}
-                className="bg-taxi px-4 py-2 font-black text-ink disabled:opacity-40"
-              >
-                Add
-              </button>
-            </form>
           </section>
 
         </div>
 
-        <footer className="border-t border-white/10 px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+        <form
+          className="flex shrink-0 gap-2 border-t border-white/10 bg-ink px-4 py-3"
+          onSubmit={(event) => {
+            event.preventDefault();
+            const name = itemName.trim();
+            if (!name) return;
+            void run(async () => {
+              await addItem(bin.id, name);
+              setItemName("");
+            });
+          }}
+        >
+          <input
+            value={itemName}
+            onChange={(event) => setItemName(event.target.value)}
+            placeholder="Add an item"
+            enterKeyHint="done"
+            className="min-w-0 flex-1 border border-white/15 bg-black px-3 py-2 text-base outline-none focus:border-taxi focus:ring-2 focus:ring-taxi"
+          />
+          <button
+            type="submit"
+            disabled={busy || !itemName.trim()}
+            className="bg-taxi px-4 py-2 font-black text-ink disabled:opacity-40"
+          >
+            Add
+          </button>
+        </form>
+
+        <footer
+          className={`shrink-0 border-t border-white/10 bg-ink px-4 py-3 ${
+            keyboardOpen ? "pb-3" : "pb-[max(0.75rem,env(safe-area-inset-bottom))]"
+          }`}
+        >
           {confirmDelete ? (
             <div className="flex gap-2">
               <button
