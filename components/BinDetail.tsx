@@ -109,34 +109,67 @@ export default function BinDetail({ bin, onClose, onChanged }: BinDetailProps) {
   const sheetRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const itemInputRef = useRef<HTMLInputElement>(null);
+  const addButtonRef = useRef<HTMLButtonElement>(null);
   const addInFlight = useRef(false);
+  const itemNameRef = useRef(itemName);
   const keyboardOpen = usePhoneKeyboardLock(sheetRef);
   notesRef.current = notes;
   binNumberRef.current = binNumber;
-
-  function focusNextItem() {
-    itemInputRef.current?.focus({ preventScroll: true });
-  }
+  itemNameRef.current = itemName;
 
   function handleAddItem() {
-    const name = itemName.trim();
+    const name = itemNameRef.current.trim();
     if (!name || addInFlight.current) return;
     addInFlight.current = true;
+    itemNameRef.current = "";
     setItemName("");
-    // Focus in this turn so iOS keeps the keyboard up and the field on screen.
-    focusNextItem();
+    const input = itemInputRef.current;
+    // Only focus if the tap blurred the field. Focusing an already-focused
+    // input makes iOS drop the keyboard.
+    if (input && document.activeElement !== input) {
+      input.focus({ preventScroll: true });
+    }
     void run(async () => {
       await addItem(bin.id, name);
     }).finally(() => {
       addInFlight.current = false;
-      focusNextItem();
       requestAnimationFrame(() => {
         const scroller = listRef.current;
         if (scroller) scroller.scrollTop = scroller.scrollHeight;
-        focusNextItem();
       });
     });
   }
+
+  const addItemActionRef = useRef(handleAddItem);
+  addItemActionRef.current = handleAddItem;
+
+  useEffect(() => {
+    const button = addButtonRef.current;
+    const input = itemInputRef.current;
+    if (!button || !input) return;
+
+    // React's touch listeners are passive, so they cannot cancel the blur that
+    // makes Safari hide the keyboard. A native touchstart listener can.
+    const keepKeyboard = (event: Event) => {
+      event.preventDefault();
+      if (document.activeElement !== input) input.focus({ preventScroll: true });
+    };
+    const addFromTouch = (event: TouchEvent) => {
+      event.preventDefault();
+      if (document.activeElement !== input) input.focus({ preventScroll: true });
+      addItemActionRef.current();
+    };
+
+    button.addEventListener("touchstart", keepKeyboard, { passive: false });
+    button.addEventListener("touchend", addFromTouch, { passive: false });
+    button.addEventListener("mousedown", keepKeyboard);
+
+    return () => {
+      button.removeEventListener("touchstart", keepKeyboard);
+      button.removeEventListener("touchend", addFromTouch);
+      button.removeEventListener("mousedown", keepKeyboard);
+    };
+  }, []);
 
   useEffect(() => {
     const scrollY = window.scrollY;
@@ -425,25 +458,25 @@ export default function BinDetail({ bin, onClose, onChanged }: BinDetailProps) {
             ref={itemInputRef}
             value={itemName}
             onChange={(event) => setItemName(event.target.value)}
-            placeholder="Add an item"
-            aria-label="New item name"
-            enterKeyHint="next"
-            className="min-w-0 flex-1 border border-white/15 bg-black px-3 py-2 text-base outline-none focus:border-taxi focus:ring-2 focus:ring-taxi"
-          />
-          <button
-            type="submit"
-            disabled={busy || !itemName.trim()}
-            onPointerDown={(event) => {
-              if (event.button !== 0) return;
-              // Keep the caret in the name field so the keyboard stays open.
-              event.preventDefault();
-            }}
-            onPointerUp={(event) => {
-              if (event.button !== 0) return;
+            onKeyDown={(event) => {
+              if (event.key !== "Enter") return;
               event.preventDefault();
               handleAddItem();
             }}
-            className="bg-taxi px-4 py-2 font-black text-ink disabled:opacity-40"
+            placeholder="Add an item"
+            aria-label="New item name"
+            enterKeyHint="go"
+            className="min-w-0 flex-1 border border-white/15 bg-black px-3 py-2 text-base outline-none focus:border-taxi focus:ring-2 focus:ring-taxi"
+          />
+          <button
+            ref={addButtonRef}
+            type="button"
+            data-add-item
+            aria-disabled={busy || !itemName.trim()}
+            onClick={() => handleAddItem()}
+            className={`bg-taxi px-4 py-2 font-black text-ink ${
+              busy || !itemName.trim() ? "opacity-40" : ""
+            }`}
           >
             Add
           </button>
