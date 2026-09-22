@@ -107,9 +107,36 @@ export default function BinDetail({ bin, onClose, onChanged }: BinDetailProps) {
   const savedNumber = useRef(bin.bin_number);
   const numberSave = useRef<Promise<boolean> | null>(null);
   const sheetRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
+  const itemInputRef = useRef<HTMLInputElement>(null);
+  const addInFlight = useRef(false);
   const keyboardOpen = usePhoneKeyboardLock(sheetRef);
   notesRef.current = notes;
   binNumberRef.current = binNumber;
+
+  function focusNextItem() {
+    itemInputRef.current?.focus({ preventScroll: true });
+  }
+
+  function handleAddItem() {
+    const name = itemName.trim();
+    if (!name || addInFlight.current) return;
+    addInFlight.current = true;
+    setItemName("");
+    // Focus in this turn so iOS keeps the keyboard up and the field on screen.
+    focusNextItem();
+    void run(async () => {
+      await addItem(bin.id, name);
+    }).finally(() => {
+      addInFlight.current = false;
+      focusNextItem();
+      requestAnimationFrame(() => {
+        const scroller = listRef.current;
+        if (scroller) scroller.scrollTop = scroller.scrollHeight;
+        focusNextItem();
+      });
+    });
+  }
 
   useEffect(() => {
     const scrollY = window.scrollY;
@@ -280,7 +307,10 @@ export default function BinDetail({ bin, onClose, onChanged }: BinDetailProps) {
           {error ? <p className="pt-2 text-sm text-taxi">{error}</p> : null}
         </header>
 
-        <div className="min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-y-contain px-4 py-4">
+        <div
+          ref={listRef}
+          className="min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-y-contain px-4 py-4"
+        >
           <div className="space-y-3">
             <div className="aspect-[4/3] overflow-hidden border border-white/10 bg-black">
               {bin.photo ? (
@@ -388,24 +418,31 @@ export default function BinDetail({ bin, onClose, onChanged }: BinDetailProps) {
           className="flex shrink-0 gap-2 border-t border-white/10 bg-ink px-4 py-3"
           onSubmit={(event) => {
             event.preventDefault();
-            const name = itemName.trim();
-            if (!name) return;
-            void run(async () => {
-              await addItem(bin.id, name);
-              setItemName("");
-            });
+            handleAddItem();
           }}
         >
           <input
+            ref={itemInputRef}
             value={itemName}
             onChange={(event) => setItemName(event.target.value)}
             placeholder="Add an item"
-            enterKeyHint="done"
+            aria-label="New item name"
+            enterKeyHint="next"
             className="min-w-0 flex-1 border border-white/15 bg-black px-3 py-2 text-base outline-none focus:border-taxi focus:ring-2 focus:ring-taxi"
           />
           <button
             type="submit"
             disabled={busy || !itemName.trim()}
+            onPointerDown={(event) => {
+              if (event.button !== 0) return;
+              // Keep the caret in the name field so the keyboard stays open.
+              event.preventDefault();
+            }}
+            onPointerUp={(event) => {
+              if (event.button !== 0) return;
+              event.preventDefault();
+              handleAddItem();
+            }}
             className="bg-taxi px-4 py-2 font-black text-ink disabled:opacity-40"
           >
             Add
