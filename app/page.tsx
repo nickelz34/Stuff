@@ -4,8 +4,11 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { addBin, getBins } from "@/app/actions";
 import BinCard from "@/components/BinCard";
 import BinDetail from "@/components/BinDetail";
+import InventoryTools from "@/components/InventoryTools";
 import SearchBar from "@/components/SearchBar";
 import type { Bin } from "@/types";
+
+const PHOTO_VIEW_KEY = "stuff-show-photos";
 
 export default function HomePage() {
   const [bins, setBins] = useState<Bin[]>([]);
@@ -14,12 +17,23 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
+  const [showPhotos, setShowPhotos] = useState(true);
 
   const refresh = useCallback(async () => {
     const next = await getBins();
     setBins(next);
     setError(null);
   }, []);
+
+  useEffect(() => {
+    const stored = window.localStorage.getItem(PHOTO_VIEW_KEY);
+    if (stored === "0") setShowPhotos(false);
+  }, []);
+
+  function setPhotoView(next: boolean) {
+    setShowPhotos(next);
+    window.localStorage.setItem(PHOTO_VIEW_KEY, next ? "1" : "0");
+  }
 
   useEffect(() => {
     let active = true;
@@ -87,7 +101,17 @@ export default function HomePage() {
         </button>
       </header>
 
-      <SearchBar value={query} onChange={setQuery} />
+      <div className="sticky top-0 z-20 -mx-4 border-b border-white/10 bg-ink/95 px-4 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))] backdrop-blur">
+        <InventoryTools
+          showPhotos={showPhotos}
+          onShowPhotos={setPhotoView}
+          onRestored={async () => {
+            setSelectedId(null);
+            await refresh();
+          }}
+        />
+        <SearchBar value={query} onChange={setQuery} />
+      </div>
 
       {error ? <p className="mt-4 text-sm text-taxi">{error}</p> : null}
 
@@ -100,7 +124,7 @@ export default function HomePage() {
       ) : (
         <section className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
           {filtered.map((bin) => (
-            <BinCard key={bin.id} bin={bin} onOpen={setSelectedId} />
+            <BinCard key={bin.id} bin={bin} showPhotos={showPhotos} onOpen={setSelectedId} />
           ))}
         </section>
       )}

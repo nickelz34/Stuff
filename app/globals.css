@@ -24,3 +24,25 @@ input,
 textarea {
   font: inherit;
 }
+
+@keyframes bin-flip {
+  0% {
+    transform: rotateY(0deg);
+  }
+  50% {
+    transform: rotateY(90deg);
+  }
+  100% {
+    transform: rotateY(0deg);
+  }
+}
+
+.bin-flip {
+  animation: bin-flip 0.36s linear;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bin-flip {
+    animation: none;
+  }
+}
