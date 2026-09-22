@@ -20,6 +20,8 @@ export const viewport: Viewport = {
   initialScale: 1,
   viewportFit: "cover",
   themeColor: "#0a0a0a",
+  // Ask the browser to shrink the layout above the keyboard so a bottom field stays put.
+  interactiveWidget: "resizes-content",
 };
 
 export default function RootLayout({
