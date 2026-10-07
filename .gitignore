@@ -8,6 +8,7 @@ build/
 
 # stuff local app storage (Keeps your data & photos private)
 data/inventory.json
+data/.inventory-*.tmp
 public/images/*
 !public/images/.gitkeep
 
