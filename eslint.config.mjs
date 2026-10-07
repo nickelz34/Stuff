@@ -13,6 +13,9 @@ export default tseslint.config(
       globals: { ...globals.browser, ...globals.node },
     },
     plugins: { "react-hooks": reactHooks },
-    rules: reactHooks.configs.recommended.rules,
+    rules: {
+      "react-hooks/rules-of-hooks": "error",
+      "react-hooks/exhaustive-deps": "warn",
+    },
   },
 );
