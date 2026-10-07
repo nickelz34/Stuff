@@ -200,30 +200,23 @@ export default function BinDetail({ bin, onClose, onChanged }: BinDetailProps) {
   }, []);
 
   useEffect(() => {
-    setNotes(bin.notes);
-    savedNotes.current = bin.notes;
-    setBinNumber(bin.bin_number);
-    binNumberRef.current = bin.bin_number;
-    savedNumber.current = bin.bin_number;
-    setItemName("");
-    setConfirmDelete(false);
-    setError(null);
-  }, [bin.id]);
-
-  useEffect(() => {
     if (binNumberRef.current !== savedNumber.current) return;
     setBinNumber(bin.bin_number);
     binNumberRef.current = bin.bin_number;
     savedNumber.current = bin.bin_number;
   }, [bin.bin_number]);
 
+  // Escape must save pending notes and bin number just like the Close button.
+  const closeActionRef = useRef(handleClose);
+  closeActionRef.current = handleClose;
+
   useEffect(() => {
     function onKey(event: KeyboardEvent) {
-      if (event.key === "Escape") onClose();
+      if (event.key === "Escape") void closeActionRef.current();
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [onClose]);
+  }, []);
 
   async function flushNotes() {
     if (notesRef.current === savedNotes.current) return;

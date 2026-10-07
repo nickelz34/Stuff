@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { unzipSync, zipSync, strToU8 } from "fflate";
 import type { Bin } from "../types";
-import { BackupError, buildBackupArchive, imageNameFromPhoto, parseBackupArchive } from "./backup";
+import { BackupError, buildBackupArchive, imageNameFromPhoto, parseBackupArchive } from "./backup.ts";
 
 const photo = new Uint8Array([0xff, 0xd8, 0xff, 0xd9]);
 

@@ -74,7 +74,7 @@ export default function InventoryTools({
         </div>
         <a
           href="/api/backup"
-          download={`stuff-backup-${new Date().toISOString().slice(0, 10)}.zip`}
+          download
           className="border border-white/20 px-3 py-2 text-xs font-bold uppercase tracking-wider text-white hover:border-taxi hover:text-taxi focus:outline-none focus-visible:ring-2 focus-visible:ring-taxi"
         >
           Backup
