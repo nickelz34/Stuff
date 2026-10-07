@@ -39,9 +39,9 @@ export default function BinCard({ bin, showPhotos, onOpen }: BinCardProps) {
     <button
       type="button"
       onClick={() => onOpen(bin.id)}
-      className="flex flex-col border border-white/10 bg-black text-left transition hover:border-taxi focus:outline-none focus-visible:ring-2 focus-visible:ring-taxi"
+      className="flex flex-col border border-white/10 bg-black text-left transition hover:border-taxi focus:outline-hidden focus-visible:ring-2 focus-visible:ring-taxi"
     >
-      <div className="relative aspect-[4/3] [perspective:900px]">
+      <div className="relative aspect-4/3 perspective-[900px]">
         <div
           data-bin-face={facePhoto ? "photo" : "stripes"}
           className={`relative h-full w-full ${flipping ? "bin-flip" : ""}`}
@@ -67,7 +67,7 @@ export default function BinCard({ bin, showPhotos, onOpen }: BinCardProps) {
         </span>
       </div>
       <div className="flex flex-1 flex-col gap-2 p-3">
-        <p className="line-clamp-2 min-h-[2.5rem] text-sm text-white/80">
+        <p className="line-clamp-2 min-h-10 text-sm text-white/80">
           {bin.notes || "No notes"}
         </p>
         <p className="text-xs font-bold uppercase tracking-wider text-taxi">

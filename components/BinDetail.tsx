@@ -319,7 +319,7 @@ export default function BinDetail({ bin, onClose, onChanged }: BinDetailProps) {
                   event.preventDefault();
                   event.currentTarget.blur();
                 }}
-                className="w-24 border border-white/15 bg-black px-2 py-1 text-3xl font-black tracking-tight text-taxi outline-none focus:border-taxi focus:ring-2 focus:ring-taxi disabled:opacity-50"
+                className="w-24 border border-white/15 bg-black px-2 py-1 text-3xl font-black tracking-tight text-taxi outline-hidden focus:border-taxi focus:ring-2 focus:ring-taxi disabled:opacity-50"
               />
             </h2>
             <button
@@ -338,7 +338,7 @@ export default function BinDetail({ bin, onClose, onChanged }: BinDetailProps) {
           className="min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-y-contain px-4 py-4"
         >
           <div className="space-y-3">
-            <div className="aspect-[4/3] overflow-hidden border border-white/10 bg-black">
+            <div className="aspect-4/3 overflow-hidden border border-white/10 bg-black">
               {bin.photo ? (
                 <img
                   src={bin.photo}
@@ -382,7 +382,7 @@ export default function BinDetail({ bin, onClose, onChanged }: BinDetailProps) {
               }}
               rows={3}
               placeholder="What's in this bin?"
-              className="mt-2 w-full resize-y border border-white/15 bg-black px-3 py-2 text-base text-white outline-none focus:border-taxi focus:ring-2 focus:ring-taxi"
+              className="mt-2 w-full resize-y border border-white/15 bg-black px-3 py-2 text-base text-white outline-hidden focus:border-taxi focus:ring-2 focus:ring-taxi"
             />
           </label>
 
@@ -459,7 +459,7 @@ export default function BinDetail({ bin, onClose, onChanged }: BinDetailProps) {
             placeholder="Add an item"
             aria-label="New item name"
             enterKeyHint="go"
-            className="min-w-0 flex-1 border border-white/15 bg-black px-3 py-2 text-base outline-none focus:border-taxi focus:ring-2 focus:ring-taxi"
+            className="min-w-0 flex-1 border border-white/15 bg-black px-3 py-2 text-base outline-hidden focus:border-taxi focus:ring-2 focus:ring-taxi"
           />
           <button
             ref={addButtonRef}

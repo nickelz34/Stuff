@@ -26,7 +26,7 @@ export default function ChangelogDialog({ onClose }: ChangelogDialogProps) {
         aria-modal="true"
         aria-labelledby="changelog-title"
         onClick={(event) => event.stopPropagation()}
-        className="flex max-h-[100dvh] w-full flex-col overflow-hidden border border-taxi/40 bg-ink sm:max-h-[90dvh] sm:max-w-lg"
+        className="flex max-h-dvh w-full flex-col overflow-hidden border border-taxi/40 bg-ink sm:max-h-[90dvh] sm:max-w-lg"
       >
         <header className="flex items-start justify-between gap-3 border-b border-white/10 px-4 py-3 pt-[max(0.75rem,env(safe-area-inset-top))]">
           <div>

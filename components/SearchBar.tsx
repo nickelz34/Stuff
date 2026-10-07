@@ -12,7 +12,7 @@ export default function SearchBar({ value, onChange }: SearchBarProps) {
         onChange={(event) => onChange(event.target.value)}
         placeholder="Search bin, notes, or item"
         autoComplete="off"
-        className="w-full border border-white/15 bg-black px-4 py-3 text-base text-white outline-none placeholder:text-white/35 focus:border-taxi focus:ring-2 focus:ring-taxi"
+        className="w-full border border-white/15 bg-black px-4 py-3 text-base text-white outline-hidden placeholder:text-white/35 focus:border-taxi focus:ring-2 focus:ring-taxi"
       />
     </label>
   );
