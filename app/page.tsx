@@ -155,6 +155,7 @@ export default function HomePage() {
 
       {selected ? (
         <BinDetail
+          key={selected.id}
           bin={selected}
           onClose={closeDetail}
           onChanged={refresh}

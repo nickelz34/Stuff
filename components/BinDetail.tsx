@@ -200,17 +200,6 @@ export default function BinDetail({ bin, onClose, onChanged }: BinDetailProps) {
   }, []);
 
   useEffect(() => {
-    setNotes(bin.notes);
-    savedNotes.current = bin.notes;
-    setBinNumber(bin.bin_number);
-    binNumberRef.current = bin.bin_number;
-    savedNumber.current = bin.bin_number;
-    setItemName("");
-    setConfirmDelete(false);
-    setError(null);
-  }, [bin.id]);
-
-  useEffect(() => {
     if (binNumberRef.current !== savedNumber.current) return;
     setBinNumber(bin.bin_number);
     binNumberRef.current = bin.bin_number;
