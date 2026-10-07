@@ -102,7 +102,7 @@ export default function HomePage() {
               alt="Stuff"
               width={720}
               height={400}
-              className="h-[4.75rem] w-auto max-w-[min(16rem,calc(100vw-12.5rem))] sm:h-28"
+              className="h-19 w-auto max-w-[min(16rem,calc(100vw-12.5rem))] sm:h-28"
             />
           </h1>
           <button
@@ -110,7 +110,7 @@ export default function HomePage() {
             onClick={() => setChangelogOpen(true)}
             aria-haspopup="dialog"
             aria-label={`Version ${APP_VERSION}, open changelog`}
-            className="shrink-0 self-center border border-taxi px-2 py-1 text-xs font-black tracking-wide text-taxi focus:outline-none focus-visible:ring-2 focus-visible:ring-taxi"
+            className="shrink-0 self-center border border-taxi px-2 py-1 text-xs font-black tracking-wide text-taxi focus:outline-hidden focus-visible:ring-2 focus-visible:ring-taxi"
           >
             v{APP_VERSION}
           </button>
@@ -125,7 +125,7 @@ export default function HomePage() {
         </button>
       </header>
 
-      <div className="sticky top-0 z-20 -mx-4 border-b border-white/10 bg-ink/95 px-4 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))] backdrop-blur">
+      <div className="sticky top-0 z-20 -mx-4 border-b border-white/10 bg-ink/95 px-4 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))] backdrop-blur-sm">
         <InventoryTools
           showPhotos={showPhotos}
           onShowPhotos={setPhotoView}

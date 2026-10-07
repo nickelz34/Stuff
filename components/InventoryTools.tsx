@@ -55,7 +55,7 @@ export default function InventoryTools({
             type="button"
             aria-pressed={!showPhotos}
             onClick={() => onShowPhotos(false)}
-            className={`px-3 py-2 text-xs font-black uppercase tracking-wider focus:outline-none focus-visible:ring-2 focus-visible:ring-taxi ${
+            className={`px-3 py-2 text-xs font-black uppercase tracking-wider focus:outline-hidden focus-visible:ring-2 focus-visible:ring-taxi ${
               showPhotos ? "text-taxi" : "bg-taxi text-ink"
             }`}
           >
@@ -65,7 +65,7 @@ export default function InventoryTools({
             type="button"
             aria-pressed={showPhotos}
             onClick={() => onShowPhotos(true)}
-            className={`border-l border-taxi px-3 py-2 text-xs font-black uppercase tracking-wider focus:outline-none focus-visible:ring-2 focus-visible:ring-taxi ${
+            className={`border-l border-taxi px-3 py-2 text-xs font-black uppercase tracking-wider focus:outline-hidden focus-visible:ring-2 focus-visible:ring-taxi ${
               showPhotos ? "bg-taxi text-ink" : "text-taxi"
             }`}
           >
@@ -75,7 +75,7 @@ export default function InventoryTools({
         <a
           href="/api/backup"
           download
-          className="border border-white/20 px-3 py-2 text-xs font-bold uppercase tracking-wider text-white hover:border-taxi hover:text-taxi focus:outline-none focus-visible:ring-2 focus-visible:ring-taxi"
+          className="border border-white/20 px-3 py-2 text-xs font-bold uppercase tracking-wider text-white hover:border-taxi hover:text-taxi focus:outline-hidden focus-visible:ring-2 focus-visible:ring-taxi"
         >
           Backup
         </a>
