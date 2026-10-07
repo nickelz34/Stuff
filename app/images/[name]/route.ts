@@ -16,8 +16,8 @@ const CONTENT_TYPES: Record<string, string> = {
 
 // `next start` only serves files that were in public/ when the server booted,
 // so photos uploaded or restored afterwards fall through to this handler.
-export async function GET(_request: Request, { params }: { params: { name: string } }) {
-  const name = imageNameFromPhoto(`/images/${params.name}`);
+export async function GET(_request: Request, { params }: { params: Promise<{ name: string }> }) {
+  const name = imageNameFromPhoto(`/images/${(await params).name}`);
   if (!name) return new Response("Not found", { status: 404 });
 
   let data: Buffer;
