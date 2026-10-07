@@ -28,14 +28,24 @@ export default function HomePage() {
     setError(null);
   }, []);
 
+  const closeDetail = useCallback(() => setSelectedId(null), []);
+  const closeChangelog = useCallback(() => setChangelogOpen(false), []);
+
   useEffect(() => {
-    const stored = window.localStorage.getItem(PHOTO_VIEW_KEY);
-    if (stored === "0") setShowPhotos(false);
+    try {
+      if (window.localStorage.getItem(PHOTO_VIEW_KEY) === "0") setShowPhotos(false);
+    } catch {
+      // Storage can be blocked (e.g. Safari with cookies disabled); keep the default view.
+    }
   }, []);
 
   function setPhotoView(next: boolean) {
     setShowPhotos(next);
-    window.localStorage.setItem(PHOTO_VIEW_KEY, next ? "1" : "0");
+    try {
+      window.localStorage.setItem(PHOTO_VIEW_KEY, next ? "1" : "0");
+    } catch {
+      // Storage blocked: the choice just won't persist.
+    }
   }
 
   useEffect(() => {
@@ -146,12 +156,12 @@ export default function HomePage() {
       {selected ? (
         <BinDetail
           bin={selected}
-          onClose={() => setSelectedId(null)}
+          onClose={closeDetail}
           onChanged={refresh}
         />
       ) : null}
 
-      {changelogOpen ? <ChangelogDialog onClose={() => setChangelogOpen(false)} /> : null}
+      {changelogOpen ? <ChangelogDialog onClose={closeChangelog} /> : null}
     </main>
   );
 }
