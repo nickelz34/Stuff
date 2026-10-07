@@ -2,12 +2,13 @@
   "name": "stuff",
   "version": "0.7.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev",
     "dev:host": "next dev -H 0.0.0.0",
     "build": "next build",
     "start": "next start",
-    "test": "node --experimental-strip-types --test lib/changelog.test.ts"
+    "test": "node --experimental-strip-types --disable-warning=ExperimentalWarning --test lib/*.test.ts"
   },
   "dependencies": {
     "fflate": "^0.8.3",
