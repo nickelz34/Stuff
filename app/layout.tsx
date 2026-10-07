@@ -5,6 +5,10 @@ export const metadata: Metadata = {
   title: "Stuff",
   description: "A simple inventory application for your Stuff",
   applicationName: "Stuff",
+  icons: {
+    icon: "/stuff-mark.png",
+    apple: "/stuff-mark.png",
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
