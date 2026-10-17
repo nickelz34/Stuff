@@ -1,6 +1,6 @@
 {
   "name": "stuff",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -9,7 +9,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint . --max-warnings 0",
-    "test": "node --experimental-strip-types --disable-warning=ExperimentalWarning --test lib/*.test.ts"
+    "test": "node --experimental-strip-types --disable-warning=ExperimentalWarning --test lib/*.test.ts installer/*.test.mjs"
   },
   "dependencies": {
     "fflate": "^0.8.3",

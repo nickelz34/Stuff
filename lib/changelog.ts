@@ -9,6 +9,14 @@ export type ChangelogEntry = {
 // package.json "version" must match APP_VERSION. lib/changelog.test.ts checks that.
 export const changelog: readonly ChangelogEntry[] = [
   {
+    version: "0.8.0",
+    releasedAt: "2026-10-17T17:00:29-05:00",
+    changes: [
+      "Added a Linux setup file that installs Stuff and starts it on this computer.",
+      "Running the setup again keeps your existing bins and photos.",
+    ],
+  },
+  {
     version: "0.7.0",
     releasedAt: "2026-09-21T22:51:00-05:00",
     changes: [
