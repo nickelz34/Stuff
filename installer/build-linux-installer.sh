@@ -16,3 +16,6 @@ chmod +x "$ROOT/dist/Stuff-Setup-linux-amd64"
 
 bytes=$(wc -c < "$ROOT/dist/Stuff-Setup-linux-amd64" | tr -d ' ')
 echo "Wrote dist/Stuff-Setup-linux-amd64 ($bytes bytes)"
+
+node --experimental-strip-types --disable-warning=ExperimentalWarning \
+  "$ROOT/lib/update.ts" --root "$ROOT" --out "$ROOT/dist/Stuff-Update.zip"

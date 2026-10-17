@@ -8,6 +8,8 @@ const nextConfig = {
     serverActions: {
       bodySizeLimit: "10mb",
     },
+    // Backup and update zips. Photo uploads stay on the 10 MB server-action limit.
+    middlewareClientMaxBodySize: "80mb",
   },
 };
 
