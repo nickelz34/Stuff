@@ -6,9 +6,9 @@ Stuff is a private list of the bins in your home: each bin’s number, a note, t
 [![React 19.3.0](https://img.shields.io/badge/React-19.3.0-149ECA)](https://react.dev/)
 [![TypeScript 5.9.3](https://img.shields.io/badge/TypeScript-5.9.3-3178C6)](https://www.typescriptlang.org/)
 
-Current version: 0.8.0
+Current version: 0.9.0
 
-That number matches the version next to the logo in the app. When the app version changes, update `lib/changelog.ts`, this line, and the `version` field in `package.json` together.
+That number matches the version next to the logo in the app. When the app version changes, update `lib/changelog.ts`, this line, the `version` field in `package.json`, and the same version in `package-lock.json` together.
 
 Stuff runs on your own computer. It does not create an account, and it does not send your inventory to a hosted service. A new copy starts empty until you add bins or restore a backup.
 
@@ -20,6 +20,7 @@ Stuff runs on your own computer. It does not create an account, and it does not 
 - [What you need first](#what-you-need-first)
 - [Install and run it](#install-and-run-it)
 - [Linux installer](#linux-installer)
+- [Update an existing install](#update-an-existing-install)
 - [Configuration](#configuration)
 - [How to use Stuff](#how-to-use-stuff)
 - [Commands](#commands)
@@ -65,6 +66,7 @@ This repository does not include a phone-store app, a Docker setup, or a hosted 
 
 - **Backup** downloads a `.zip` file named like `stuff-backup-2026-09-21.zip`.
 - **Restore** replaces the current bins and photos with that zip, after you press **Replace**.
+- **Update** installs a newer copy of Stuff from `Stuff-Update.zip`. Your bins and photos stay.
 - The version button next to the logo opens a changelog. Times are shown in US Central Time.
 
 ## Technology
@@ -220,7 +222,7 @@ Leave this terminal open. `npm run dev` starts Next.js in development mode. When
 
 `localhost` means “this computer.” Open that address in your browser. If the terminal prints a different local address, open the address it printed. That happens when port 3000 is already taken.
 
-You are in the right place when you see the Stuff logo, a version button such as `v0.8.0`, a **+ Bin** button, and either your bins or the text “No bins yet. Add one to start.”
+You are in the right place when you see the Stuff logo, a version button such as `v0.9.0`, a **+ Bin** button, and either your bins or the text “No bins yet. Add one to start.”
 
 This command is for local use. It is not a public hosting setup.
 
@@ -273,7 +275,7 @@ Edits you make in the app are saved to those files immediately. You do not resta
 
 If you change server source code or `next.config.mjs`, stop the server and run `npm run dev` again. Development mode reloads many code edits by itself. A change to `next.config.mjs` needs a restart.
 
-`next.config.mjs` sets the Server Action upload limit to 10 MB. That is the limit for adding a photo through the bin screen. It is not a user setting in the page.
+`next.config.mjs` sets the Server Action upload limit to 10 MB. That is the limit for adding a photo through the bin screen. It is not a user setting in the page. Backup and update zips use a separate 80 MB limit.
 
 The photo view preference is stored in the browser. The inventory is stored on the server. Clearing the browser’s site data forgets the Bins/Photos choice. It does not delete your bins.
 
@@ -337,13 +339,19 @@ When it finishes, the page reports how many bins and photos were restored. If th
 
 There is no undo except another backup you already saved.
 
+### Update
+
+Download `Stuff-Update.zip` from the release. Click **Update**, choose that zip, and confirm. Your bins and photos stay. It can take several minutes. Do not choose `Stuff-Setup-linux-amd64`. That file is the Linux installer, not the update.
+
+See [Update an existing install](#update-an-existing-install).
+
 ### Delete a bin
 
 Open the bin, click **Delete bin**, then **Confirm delete**. **Cancel** goes back. This removes the bin from `data/inventory.json`. The photo file can remain in `public/images/`.
 
 ### Read what changed between versions
 
-Click the version button (`v0.8.0` in this version). The dialog lists changes from `lib/changelog.ts`. Close it when you are done. Escape closes it too.
+Click the version button (`v0.9.0` in this version). The dialog lists changes from `lib/changelog.ts`. Close it when you are done. Escape closes it too.
 
 ### If the page says something went wrong
 
@@ -442,13 +450,25 @@ curl -I http://127.0.0.1:1234
 | Bins or photos disappeared | `data/` or `public/images/` was replaced. Restore those folders from a backup. A missing `data/inventory.json` is an empty inventory. |
 | Another device cannot connect | Use the same home network, leave the firewall step enabled, and open the computer’s LAN address on port 1234. |
 
-To build the setup file from this repository:
+To build the release files from this repository, run `npm install` once in this folder, then:
 
 ```
 installer/build-linux-installer.sh
 ```
 
-That writes `dist/Stuff-Setup-linux-amd64` and marks it executable. `dist/` is not committed.
+That writes `dist/Stuff-Setup-linux-amd64` and marks it executable. It also writes `dist/Stuff-Update.zip`. `dist/` is not committed. The setup file is the installer. The zip is what you upload with **Update** in the app.
+
+## Update an existing install
+
+Use this when Stuff is already running and you want a newer version. Your bins and photos stay.
+
+Download `Stuff-Update.zip` from the release assets on [https://github.com/nickelz34/Stuff](https://github.com/nickelz34/Stuff), next to `Stuff-Setup-linux-amd64`. The setup file is the Linux installer. Do not upload it. The update is the zip.
+
+In the app, next to **Backup** and **Restore**, click **Update** and choose `Stuff-Update.zip`. The page asks you to confirm. It says your bins and photos stay, and that this can take several minutes. Confirm.
+
+Stuff copies the new app files into the folder the server was started from. It keeps `data/` and `public/images/` as they are, including a missing inventory file. It does not invent bins. Then it installs packages, builds, and restarts. If `stuff.service` is installed, it restarts that service. Reload the page after it comes back. The version button should show the new version, such as `v0.9.0`.
+
+A zip that is not a Stuff update is refused. The file has to be about 80 MB or smaller, the same size order as a backup zip.
 
 ## Project structure
 
@@ -456,15 +476,16 @@ Generated folders such as `node_modules` and `.next` are left out. `data/` appea
 
 ```
 app/                     The website
-  page.tsx               Home screen (bins, search, backup buttons)
+  page.tsx               Home screen (bins, search, backup and update)
   layout.tsx             Page title and icon
   actions.ts             Save bins, items, notes, and photos
   error.tsx              "Something went wrong" screen
   globals.css            Visual styles
   api/backup/route.ts    Download and upload a backup zip
+  api/update/route.ts    Upload a Stuff update zip
   images/[name]/route.ts Serves a photo file
 components/              Buttons, bin cards, bin editor, search, changelog
-installer/               Linux setup wizard and the script that builds Stuff-Setup-linux-amd64
+installer/               Linux setup wizard and the script that builds Stuff-Setup-linux-amd64 and Stuff-Update.zip
 lib/                     Inventory file, backup rules, version list, tests
 public/
   stuff-mark.png         Logo
@@ -486,7 +507,7 @@ The tests do not need a database, a browser, or a running server. From the proje
 npm test
 ```
 
-That runs Node’s built-in test runner on `lib/changelog.test.ts`, `lib/backup.test.ts`, `lib/inventory-db.test.ts`, and `installer/install.test.mjs`. One changelog test reads this README and checks that the line `Current version: 0.8.0` is still present and matches `package.json`.
+That runs Node’s built-in test runner on `lib/changelog.test.ts`, `lib/backup.test.ts`, `lib/inventory-db.test.ts`, `lib/update.test.ts`, and `installer/install.test.mjs`. One changelog test reads this README and checks that the line `Current version: 0.9.0` is still present and matches `package.json`.
 
 ```
 npm run lint

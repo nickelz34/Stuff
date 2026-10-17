@@ -13,8 +13,9 @@ export default function InventoryTools({
   onShowPhotos,
   onRestored,
 }: InventoryToolsProps) {
-  const [busy, setBusy] = useState<"restore" | null>(null);
+  const [busy, setBusy] = useState<"restore" | "update" | null>(null);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [pendingUpdate, setPendingUpdate] = useState<File | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -42,6 +43,36 @@ export default function InventoryTools({
       setMessage(`Restored ${bins} ${bins === 1 ? "bin" : "bins"} and ${photos} ${photos === 1 ? "photo" : "photos"}.`);
     } catch (restoreError) {
       setError(restoreError instanceof Error ? restoreError.message : "Could not restore that backup.");
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function confirmUpdate() {
+    if (!pendingUpdate) return;
+    setBusy("update");
+    setError(null);
+    setMessage(null);
+    try {
+      const body = new FormData();
+      body.set("update", pendingUpdate);
+      const response = await fetch("/api/update", { method: "POST", body });
+      const payload = (await response.json().catch(() => null)) as {
+        error?: string;
+        message?: string;
+      } | null;
+      if (!response.ok) {
+        throw new Error(payload?.error || "Could not install that update.");
+      }
+      setPendingUpdate(null);
+      setMessage(payload?.message || "Update installed. Stuff is restarting. Your bins and photos were kept.");
+    } catch (updateError) {
+      if (updateError instanceof TypeError) {
+        setPendingUpdate(null);
+        setMessage("Stuff is restarting. Your bins and photos stay. Reload this page in a minute.");
+        return;
+      }
+      setError(updateError instanceof Error ? updateError.message : "Could not install that update.");
     } finally {
       setBusy(null);
     }
@@ -97,7 +128,36 @@ export default function InventoryTools({
                 setError("Choose a .zip backup file.");
                 return;
               }
+              setPendingUpdate(null);
               setPendingFile(file);
+            }}
+          />
+        </label>
+        <label className="border border-white/20 px-3 py-2 text-xs font-bold uppercase tracking-wider text-white hover:border-taxi hover:text-taxi focus-within:ring-2 focus-within:ring-taxi">
+          Update
+          <input
+            type="file"
+            accept=".zip,application/zip"
+            disabled={busy !== null}
+            className="sr-only"
+            onChange={(event) => {
+              const file = event.target.files?.[0];
+              event.target.value = "";
+              setMessage(null);
+              setError(null);
+              if (!file) return;
+              if (!file.name.toLowerCase().endsWith(".zip")) {
+                setPendingUpdate(null);
+                setError("Choose a .zip update file.");
+                return;
+              }
+              if (file.size > 80 * 1024 * 1024) {
+                setPendingUpdate(null);
+                setError("That update is too large.");
+                return;
+              }
+              setPendingFile(null);
+              setPendingUpdate(file);
             }}
           />
         </label>
@@ -120,6 +180,28 @@ export default function InventoryTools({
             type="button"
             disabled={busy !== null}
             onClick={() => setPendingFile(null)}
+            className="border border-white/20 px-3 py-2 text-xs font-bold uppercase tracking-wider disabled:opacity-50"
+          >
+            Cancel
+          </button>
+        </div>
+      ) : pendingUpdate ? (
+        <div className="flex flex-wrap items-center gap-2 border border-taxi/50 px-3 py-3">
+          <p className="min-w-0 flex-1 text-sm">
+            Install <span className="font-bold">{pendingUpdate.name}</span>? Your bins and photos stay. This can take several minutes.
+          </p>
+          <button
+            type="button"
+            disabled={busy !== null}
+            onClick={() => void confirmUpdate()}
+            className="bg-taxi px-3 py-2 text-xs font-black uppercase tracking-wider text-ink disabled:opacity-50"
+          >
+            {busy === "update" ? "Updating…" : "Update"}
+          </button>
+          <button
+            type="button"
+            disabled={busy !== null}
+            onClick={() => setPendingUpdate(null)}
             className="border border-white/20 px-3 py-2 text-xs font-bold uppercase tracking-wider disabled:opacity-50"
           >
             Cancel
