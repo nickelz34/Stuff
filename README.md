@@ -6,7 +6,7 @@ Stuff is a private list of the bins in your home: each bin’s number, a note, t
 [![React 19.3.0](https://img.shields.io/badge/React-19.3.0-149ECA)](https://react.dev/)
 [![TypeScript 5.9.3](https://img.shields.io/badge/TypeScript-5.9.3-3178C6)](https://www.typescriptlang.org/)
 
-Current version: 0.7.0
+Current version: 0.8.0
 
 That number matches the version next to the logo in the app. When the app version changes, update `lib/changelog.ts`, this line, and the `version` field in `package.json` together.
 
@@ -19,6 +19,7 @@ Stuff runs on your own computer. It does not create an account, and it does not 
 - [Technology](#technology)
 - [What you need first](#what-you-need-first)
 - [Install and run it](#install-and-run-it)
+- [Linux installer](#linux-installer)
 - [Configuration](#configuration)
 - [How to use Stuff](#how-to-use-stuff)
 - [Commands](#commands)
@@ -34,7 +35,7 @@ Stuff is for a person who keeps belongings in numbered bins and wants to look up
 
 It is a small single-user app. There is no login, no sharing between accounts, and no separate database program to install. The list is a file on the computer where the app is running.
 
-This repository does not include a phone-store app, a Docker setup, or a hosted deploy. You open Stuff in a web browser after starting it with Node.js. The page can be opened on a phone browser while the computer that runs the server is on.
+This repository does not include a phone-store app, a Docker setup, or a hosted deploy. On a 64-bit Intel or AMD Linux PC you can use the Linux setup file below. You can also start Stuff from the project folder with Node.js. The page can be opened on a phone browser while the computer that runs the server is on.
 
 ## Features
 
@@ -219,7 +220,7 @@ Leave this terminal open. `npm run dev` starts Next.js in development mode. When
 
 `localhost` means “this computer.” Open that address in your browser. If the terminal prints a different local address, open the address it printed. That happens when port 3000 is already taken.
 
-You are in the right place when you see the Stuff logo, a version button such as `v0.7.0`, a **+ Bin** button, and either your bins or the text “No bins yet. Add one to start.”
+You are in the right place when you see the Stuff logo, a version button such as `v0.8.0`, a **+ Bin** button, and either your bins or the text “No bins yet. Add one to start.”
 
 This command is for local use. It is not a public hosting setup.
 
@@ -342,7 +343,7 @@ Open the bin, click **Delete bin**, then **Confirm delete**. **Cancel** goes bac
 
 ### Read what changed between versions
 
-Click the version button (`v0.7.0` in this version). The dialog lists changes from `lib/changelog.ts`. Close it when you are done. Escape closes it too.
+Click the version button (`v0.8.0` in this version). The dialog lists changes from `lib/changelog.ts`. Close it when you are done. Escape closes it too.
 
 ### If the page says something went wrong
 
@@ -366,6 +367,89 @@ There is no format command and no database migration command in `package.json`.
 
 Development mode (`npm run dev`) is the one to use while setting up and editing. Production mode (`npm run build`, then `npm run start`) serves the built files. Use only one of those servers at a time if both would use port 3000.
 
+## Linux installer
+
+This is for a 64-bit Intel or AMD Linux PC. `uname -m` prints `x86_64`. The published file is not for ARM. It is a setup program, not the source zip or tarball from the green Code button.
+
+Download `Stuff-Setup-linux-amd64` from the release assets on [https://github.com/nickelz34/Stuff](https://github.com/nickelz34/Stuff). A file of only a few KB is usually an HTML error page, not the installer. Expect a few hundred kilobytes. The build script prints the exact size.
+
+In a terminal, in the folder that contains the file:
+
+```
+chmod +x Stuff-Setup-linux-amd64
+sudo ./Stuff-Setup-linux-amd64
+```
+
+Keep that terminal open. It prints:
+
+```
+Stuff Setup
+===========
+Opening the graphical installer at http://127.0.0.1:12345/
+Keep this window open until setup finishes.
+```
+
+A browser opens to that address. If it does not, paste the URL into Firefox or Chrome on the same computer. [http://localhost:12345/](http://localhost:12345/) works too. The password prompt, if you did not already type `sudo`, happens in the terminal before the browser opens.
+
+Click through Welcome, Folder, Network, Startup, Review, Install, and Done. The defaults are fine. Nothing is written to the install folder until you click Install. Installing Node and building Stuff can take several minutes. The page says so. The last screen opens Stuff at [http://127.0.0.1:1234](http://127.0.0.1:1234). There is no account to create.
+
+On a computer with no browser:
+
+```
+sudo ./Stuff-Setup-linux-amd64 --cli
+```
+
+That installs with the defaults and prints the Stuff address. It does not open the wizard.
+
+From a laptop, you can also forward the wizard port and open the page on the laptop:
+
+```
+ssh -L 12345:127.0.0.1:12345 user@server
+```
+
+Then start the installer on the server and open [http://127.0.0.1:12345/](http://127.0.0.1:12345/) on the laptop.
+
+A root install uses one folder, `/opt/stuff`. It contains the app, `node_modules`, `.next`, a private Node.js 22.13 or newer in `.node`, your inventory at `/opt/stuff/data/inventory.json`, and photos at `/opt/stuff/public/images`. The app creates the inventory and photo folder the first time you use them. A missing inventory file means the list is empty. The installer does not invent bins. Running it again keeps `data/` and `public/images/`.
+
+The server is `stuff.service`. It runs `npm run start` with its working directory set to `/opt/stuff`, `PORT=1234`, and `HOSTNAME=0.0.0.0`. On this computer the address is [http://127.0.0.1:1234](http://127.0.0.1:1234). Other devices on the home network use `http://` plus this computer’s LAN address plus `:1234`. There is no login. Do not forward this port to the public internet.
+
+Useful commands:
+
+```
+sudo systemctl status stuff
+sudo systemctl restart stuff
+sudo journalctl -u stuff -f
+```
+
+If the page will not load:
+
+```
+sudo systemctl status stuff.service
+sudo journalctl -u stuff.service -n 50 --no-pager
+sudo systemctl restart stuff.service
+curl -I http://127.0.0.1:1234
+```
+
+| What you see | What it means |
+| --- | --- |
+| `chmod: cannot access` | Wrong directory, or the file was never downloaded. |
+| The file is only a few KB | The download failed. |
+| `Permission denied` | `chmod +x` was skipped, or sudo is required. |
+| `cannot execute binary file` | This machine is not x86_64. |
+| The browser never opens | Paste the printed URL on this computer, or use `--cli`, or the SSH port forward. |
+| Install takes a long time | Node install and `npm run build` are still running. Leave the terminal open. |
+| The Stuff page cannot connect | The server is not running. On this computer open [http://127.0.0.1:1234](http://127.0.0.1:1234), then use the commands above. |
+| Bins or photos disappeared | `data/` or `public/images/` was replaced. Restore those folders from a backup. A missing `data/inventory.json` is an empty inventory. |
+| Another device cannot connect | Use the same home network, leave the firewall step enabled, and open the computer’s LAN address on port 1234. |
+
+To build the setup file from this repository:
+
+```
+installer/build-linux-installer.sh
+```
+
+That writes `dist/Stuff-Setup-linux-amd64` and marks it executable. `dist/` is not committed.
+
 ## Project structure
 
 Generated folders such as `node_modules` and `.next` are left out. `data/` appears only after the app saves.
@@ -380,6 +464,7 @@ app/                     The website
   api/backup/route.ts    Download and upload a backup zip
   images/[name]/route.ts Serves a photo file
 components/              Buttons, bin cards, bin editor, search, changelog
+installer/               Linux setup wizard and the script that builds Stuff-Setup-linux-amd64
 lib/                     Inventory file, backup rules, version list, tests
 public/
   stuff-mark.png         Logo
@@ -401,7 +486,7 @@ The tests do not need a database, a browser, or a running server. From the proje
 npm test
 ```
 
-That runs Node’s built-in test runner on `lib/changelog.test.ts`, `lib/backup.test.ts`, and `lib/inventory-db.test.ts`. One changelog test reads this README and checks that the line `Current version: 0.7.0` is still present and matches `package.json`.
+That runs Node’s built-in test runner on `lib/changelog.test.ts`, `lib/backup.test.ts`, `lib/inventory-db.test.ts`, and `installer/install.test.mjs`. One changelog test reads this README and checks that the line `Current version: 0.8.0` is still present and matches `package.json`.
 
 ```
 npm run lint

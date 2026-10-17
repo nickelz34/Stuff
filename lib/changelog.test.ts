@@ -15,7 +15,7 @@ function centralOffset(iso: string): string {
 
 test("the current version is the newest changelog entry", () => {
   assert.equal(APP_VERSION, changelog[0].version);
-  assert.equal(APP_VERSION, "0.7.0");
+  assert.equal(APP_VERSION, "0.8.0");
 });
 
 test("README and package.json stay on the app version", () => {

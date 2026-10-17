@@ -1,6 +1,7 @@
 # Next.js system files
 node_modules/
 .next/
+dist/
 out/
 build/
 .env*.local
